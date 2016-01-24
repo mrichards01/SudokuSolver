@@ -19,6 +19,17 @@ def display_board(grid):
 		footer+="# "
 	print footer
 
+
+def my_naive_implementation(grid):
+	# 1) Search through all empty tiles, pick 1 in each check if it conforms to sudoku rules/constraints
+	# 2) If  any tile doesn't comply add 1, otherwise continue with addition and repeat the process
+	# 3) If it is clear no number from 1-9 can be used in that tile then this is no longer a valid grid and requires
+
+	
+#use tree based method with backtracking if a branch is seen to have failed
+def backtracing_method(grid):
+	return
+
 # need to read from a file delimited by spaces for each number
 
 sudoku_file = open('sudoku.txt', 'r')
@@ -27,16 +38,10 @@ grid = []
 
 #sanitize and display 
 for curr_row in rows:
-	curr_row.replace('\n','')
-	curr_row.replace('\r','')
-	print curr_row
-	values = curr_row.split(' ')
+	sanitized_row = curr_row.replace('\n','')
+	values = sanitized_row.split(' ')
 	grid.append(values)
 
 display_board(grid)
-
-#my_naive_implementation(grid)
-
-
-#def my_naive_implementation(grid):
+my_naive_implementation(grid)
 
