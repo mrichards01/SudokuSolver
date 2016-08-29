@@ -85,39 +85,6 @@ def brute_force_search(original_grid, no_remaining_cells):
 	current_grid = list(original_grid)
 	is_valid_solution(original_grid, 0, 0, no_remaining_cells, current_grid )
 	return current_grid
-	# for j in range(0, len(original_grid)):
-	# 	curr_row = original_grid[j]
-	# 	for i in range (0, len(curr_row)):
-	# 		#if the vaue existed in the original grid, this is a starting value so ignore this
-	# 		if curr_row[i]!='_':
-	# 			continue
-	# 		if curr_row[i]=='_':
-	# 			value = 1
-	# 		else:
-	# 			# remove the last known value from the respective region, column and row
-	# 			curr_row[i] = '_'
-	# 			value = int(curr_row[i])
-	# 			remove_from_sets(x, y, value)
-	# 			value +=1 # add one, to the existing value. Already tried the previous value
-
-	# 		#try every possibe value
-	# 		value_found = False
-
-	# 		#otherwise where a value failed
-	# 		if value_found == False:
-	# 			if len(current_solution) == 0:
-	# 				return #no possible solution
-	# 			#go to previous cell if no valid value could be found
-	# 			if i==0:
-	# 				j -=1
-	# 			i = (i+9-2)%9
-	# 			break
-
-	# 		first_val = False
-	print (all_columns)
-	print (all_rows)
-	return new_grid
-
 
 # need to read from a file delimited by spaces for each number
 sudoku_file = open('sudoku.txt', 'r')
@@ -163,4 +130,3 @@ for j in range(0,len(grid)):
 		all_rows[j].add(curr_value)
 
 display_sudoku_grid(brute_force_search(grid, no_remaining_cells))
-
