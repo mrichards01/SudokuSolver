@@ -1,5 +1,5 @@
-#Problem: How might you solve a Sodoku problem algorithmically? How may you compute an optimal solution
-#utility function to display board
+import time
+
 def display_sudoku_grid(grid):
 	header = ""
 	for x in range(0,len(grid)+2):
@@ -53,16 +53,15 @@ def get_next_pos(x, y):
 	return (x,y)
 
 #function checks if any cascading number of changes from a given position can result in a valid solution
-def is_valid_solution(original_grid, x, y, no_remaining_cells, current_grid=[]):
+def is_valid_solution(original_grid, x, y, current_grid=[]):
 	# terminate where no other cells are remaining
-	if no_remaining_cells == 0:
+	if x==8 and y==8:
 		return True
 	next_pos = get_next_pos(x, y)
 	# if the value at this position already exists then continue to check the next position
 	original_val = original_grid[y][x]
 	if original_val!='_':
-		return is_valid_solution(original_grid, next_pos[0], next_pos[1], no_remaining_cells, current_grid)
-	no_remaining_cells-=1
+		return is_valid_solution(original_grid, next_pos[0], next_pos[1], current_grid)
 
 	# otherwise if no value exists at this position, test values 1-9
 	# if no value is possible, return False no possible solution 
@@ -71,32 +70,79 @@ def is_valid_solution(original_grid, x, y, no_remaining_cells, current_grid=[]):
 		if is_cell_valid(x, y, curr_val):
 			add_to_sets(x, y, curr_val)
 			current_grid[y][x] = curr_val
-			if is_valid_solution(original_grid, next_pos[0], next_pos[1], no_remaining_cells, current_grid):
+			if is_valid_solution(original_grid, next_pos[0], next_pos[1], current_grid):
 				return True
 			remove_from_sets(x,y, curr_val)
 			current_grid[y][x]='_'
 
 	return False
 
-def brute_force_search(original_grid, no_remaining_cells):
+def solve_by_pen_and_paper(original_grid):
+	# Iterate through 1-9 asserting whether they can definitely be placed into a position
+	# A number can be used with complete certainty if there is only one remaining space on the axis or block
+	# Otherwise a number can only be used with certainity if it cannot be used in any other cell on the x/y axis and the block region
+	current_grid = list(original_grid)
+	for test_val in range (1,10):
+		#get set of all possible coords for the given test value
+		#valid_cells = get_all_possible_cells(current_grid, test_val)
+
+		#for any cell which is still valid, check if the test value can be used without any doubts
+		for y in range(0,len(current_grid)):
+			col_vals = current_grid[y]
+			for x in range(0,len(col_vals)):
+				if current_grid[y][x]!='_' or not is_cell_valid(x,y, test_val):
+					continue
+
+				region_number = get_region_number(x,y)
+				column = all_columns[x]
+				row = all_rows[y]
+				region = all_regions[region_number]
+				#if the row, column or region only has one remaining number then we can deduce that this number is the only valid number left
+				if len(row)==8 or len(column)==8 or len(region)==8:
+					current_grid[y][x] = test_val
+					add_to_sets(x,y,test_val)
+
+				valid = True
+				for i in row:
+					if i!='_' and is_cell_valid(x,y,test_val):
+						valid = False
+						break
+
+				for i in column:
+					if i!='_' and is_cell_valid(x,y,test_val):
+						valid = False
+						break
+				for i in region:
+					if i!='_' and is_cell_valid(x,y,test_val):
+						valid = False
+						break
+				if valid==False:
+					continue
+
+				current_grid[y][x] = test_val
+				add_to_sets(x,y,test_val)
+	return current_grid
+					
+def brute_force_search(original_grid):
 	# 1) Search through all empty tiles, pick 1 in each check if it conforms to sudoku rules/constraints
 	# 2) If any tile doesn't comply add 1, otherwise continue with addition and repeat the process
 	# 3) If it is clear no number from 1-9 can be used in that tile then this is no longer a valid grid and requires
 	current_grid = list(original_grid)
-	is_valid_solution(original_grid, 0, 0, no_remaining_cells, current_grid )
+	is_valid_solution(original_grid, 0, 0, current_grid )
 	return current_grid
 
-# need to read from a file delimited by spaces for each number
+# Need to read from a file delimited by spaces for each number
 sudoku_file = open('sudoku.txt', 'r')
 rows = sudoku_file.readlines()
 grid = []
 
-# create lookup collections for fast constant time searches
+# Create lookup collections for fast constant time searches 
+# My solution compromises on memory for speed
 all_columns = {} #indexed by x position
-all_rows = {} # indexed by y position
+all_rows = {} 	 #indexed by y position
 all_regions = {} #indexed as 1-9 from left to right, top to bottom. Each region is a 3x3 grid in the grid
 
-#sanitize and display 
+# Sanitize and display sudoku grid 
 for j in range(0, len(rows)):
 	curr_row = rows[j]
 	sanitised_row = curr_row.replace('\n','')
@@ -107,7 +153,7 @@ for j in range(0, len(rows)):
 
 display_sudoku_grid(grid)
 
-#initilise quick lookup collections
+# Initilise quick lookup collections
 no_remaining_cells = 0
 for j in range(0,len(grid)):
 	values = grid[j]
@@ -129,4 +175,12 @@ for j in range(0,len(grid)):
 		all_regions[region_number].add(curr_value)
 		all_rows[j].add(curr_value)
 
-display_sudoku_grid(brute_force_search(grid, no_remaining_cells))
+#deterministic pen and paper method followed by brute force approach
+start_time = time.time()
+#first_grid = solve_by_pen_and_paper(grid)
+#display_sudoku_grid(first_grid)
+#isplay_sudoku_grid(grid)
+solve_by_pen_and_paper(grid)
+#brute_force_search(grid)
+display_sudoku_grid(grid)
+print("--- %s seconds ---" % (time.time() - start_time))
