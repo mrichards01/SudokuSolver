@@ -40,17 +40,36 @@ def remove_from_sets(x, y, value):
 	all_regions[region_number].remove(value)
 
 def is_cell_valid(x, y, value):
+	# cell entry is valid if no other entry exists in the same row, column and 3x3 region
 	region_number = get_region_number(x,y)
 	if value in all_rows[y] or value in all_columns[x] or value in all_regions[region_number]:
 		return False
 	return True
-	# cell entry is valid if no other entry exists in the same row, column and 3x3 region
 
 def get_next_pos(x, y):
 	x=(x+1)%9
 	if x==0:
 		y+=1
 	return (x,y)
+
+def get_empty_cells_on_axis_and_region(x,y, exclude_input_cell, current_grid):
+	empty_cells = set()
+	region_number = get_region_number(x,y)
+	row = current_grid[y]
+	for i in range(0,len(row)):
+		if row[i]=='_':
+			empty_cells.add((i,y))
+
+	for j in range(0, len(current_grid)):
+		row = current_grid[j]
+		if row[x]=='_':
+			empty_cells.add((i,y))
+
+	#get cells from region here
+	if exclude_input_cell==True:
+		empty_cells.remove((x,y))
+
+	return empty_cells
 
 #function checks if any cascading number of changes from a given position can result in a valid solution
 def is_valid_solution(original_grid, x, y, current_grid=[]):
@@ -94,33 +113,34 @@ def solve_by_pen_and_paper(original_grid):
 					continue
 
 				region_number = get_region_number(x,y)
-				column = all_columns[x]
-				row = all_rows[y]
-				region = all_regions[region_number]
 				#if the row, column or region only has one remaining number then we can deduce that this number is the only valid number left
-				if len(row)==8 or len(column)==8 or len(region)==8:
+				if len(all_rows[y])==8 or len(all_columns[x])==8 or len(all_regions[region_number])==8:
 					current_grid[y][x] = test_val
+					add_to
 					add_to_sets(x,y,test_val)
+					continue
 
 				valid = True
+				row = current_grid[y]
+				column = row[x]
+				region
 				for i in row:
-					if i!='_' and is_cell_valid(x,y,test_val):
+					if is_cell_valid(x,y,test_val):
 						valid = False
 						break
 
 				for i in column:
-					if i!='_' and is_cell_valid(x,y,test_val):
+					if is_cell_valid(x,y,test_val):
 						valid = False
 						break
 				for i in region:
-					if i!='_' and is_cell_valid(x,y,test_val):
+					if is_cell_valid(x,y,test_val):
 						valid = False
 						break
-				if valid==False:
-					continue
+				if valid==True:
+					current_grid[y][x] = test_val
+					add_to_sets(x,y,test_val)
 
-				current_grid[y][x] = test_val
-				add_to_sets(x,y,test_val)
 	return current_grid
 					
 def brute_force_search(original_grid):
